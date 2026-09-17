@@ -1,42 +1,170 @@
 /*
-=============================================================
-Create Database and Schemas
-=============================================================
+===============================================================================
+DDL Script: Create Bronze Tables
+===============================================================================
 Script Purpose:
-    This script creates a new database named 'DataWarehouse' after checking if it already exists. 
-    If the database exists, it is dropped and recreated. Additionally, the script sets up three schemas 
-    within the database: 'bronze', 'silver', and 'gold'.
-	
-WARNING:
-    Running this script will drop the entire 'DataWarehouse' database if it exists. 
-    All data in the database will be permanently deleted. Proceed with caution 
-    and ensure you have proper backups before running this script.
+    This script creates tables in the 'bronze' schema.
+    
+    - Creates the 'bronze' schema if it does not already exist.
+    - Drops existing Bronze tables if they already exist.
+    - Recreates the Bronze tables with the required structure.
+
+IMPORTANT:
+    Make sure you are connected to the correct database before running this
+    script.
+===============================================================================
 */
 
-USE master;
-GO
 
--- Drop and recreate the 'DataWarehouse' database
-IF EXISTS (SELECT 1 FROM sys.databases WHERE name = 'DataWarehouse')
+/*
+===============================================================================
+1. CREATE BRONZE SCHEMA
+===============================================================================
+*/
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.schemas
+    WHERE name = 'bronze'
+)
 BEGIN
-    ALTER DATABASE DataWarehouse SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-    DROP DATABASE DataWarehouse;
+    EXEC('CREATE SCHEMA bronze');
 END;
 GO
 
--- Create the 'DataWarehouse' database
-CREATE DATABASE DataWarehouse;
+
+/*
+===============================================================================
+2. CREATE TABLE: bronze.crm_cust_info
+===============================================================================
+*/
+
+IF OBJECT_ID('bronze.crm_cust_info', 'U') IS NOT NULL
+    DROP TABLE bronze.crm_cust_info;
 GO
 
-USE DataWarehouse;
+CREATE TABLE bronze.crm_cust_info (
+    cst_id              INT,
+    cst_key             NVARCHAR(50),
+    cst_firstname       NVARCHAR(50),
+    cst_lastname        NVARCHAR(50),
+    cst_marital_status  NVARCHAR(50),
+    cst_gndr            NVARCHAR(50),
+    cst_create_date     DATE
+);
 GO
 
--- Create Schemas
-CREATE SCHEMA bronze;
+
+/*
+===============================================================================
+3. CREATE TABLE: bronze.crm_prd_info
+===============================================================================
+*/
+
+IF OBJECT_ID('bronze.crm_prd_info', 'U') IS NOT NULL
+    DROP TABLE bronze.crm_prd_info;
 GO
 
-CREATE SCHEMA silver;
+CREATE TABLE bronze.crm_prd_info (
+    prd_id       INT,
+    prd_key      NVARCHAR(50),
+    prd_nm       NVARCHAR(50),
+    prd_cost     INT,
+    prd_line     NVARCHAR(50),
+    prd_start_dt DATETIME,
+    prd_end_dt   DATETIME
+);
 GO
 
-CREATE SCHEMA gold;
+
+/*
+===============================================================================
+4. CREATE TABLE: bronze.crm_sales_details
+===============================================================================
+*/
+
+IF OBJECT_ID('bronze.crm_sales_details', 'U') IS NOT NULL
+    DROP TABLE bronze.crm_sales_details;
+GO
+
+CREATE TABLE bronze.crm_sales_details (
+    sls_ord_num  NVARCHAR(50),
+    sls_prd_key  NVARCHAR(50),
+    sls_cust_id  INT,
+    sls_order_dt INT,
+    sls_ship_dt  INT,
+    sls_due_dt   INT,
+    sls_sales    INT,
+    sls_quantity INT,
+    sls_price    INT
+);
+GO
+
+
+/*
+===============================================================================
+5. CREATE TABLE: bronze.erp_loc_a101
+===============================================================================
+*/
+
+IF OBJECT_ID('bronze.erp_loc_a101', 'U') IS NOT NULL
+    DROP TABLE bronze.erp_loc_a101;
+GO
+
+CREATE TABLE bronze.erp_loc_a101 (
+    cid    NVARCHAR(50),
+    cntry  NVARCHAR(50)
+);
+GO
+
+
+/*
+===============================================================================
+6. CREATE TABLE: bronze.erp_cust_az12
+===============================================================================
+*/
+
+IF OBJECT_ID('bronze.erp_cust_az12', 'U') IS NOT NULL
+    DROP TABLE bronze.erp_cust_az12;
+GO
+
+CREATE TABLE bronze.erp_cust_az12 (
+    cid    NVARCHAR(50),
+    bdate  DATE,
+    gen    NVARCHAR(50)
+);
+GO
+
+
+/*
+===============================================================================
+7. CREATE TABLE: bronze.erp_px_cat_g1v2
+===============================================================================
+*/
+
+IF OBJECT_ID('bronze.erp_px_cat_g1v2', 'U') IS NOT NULL
+    DROP TABLE bronze.erp_px_cat_g1v2;
+GO
+
+CREATE TABLE bronze.erp_px_cat_g1v2 (
+    id           NVARCHAR(50),
+    cat          NVARCHAR(50),
+    subcat       NVARCHAR(50),
+    maintenance  NVARCHAR(50)
+);
+GO
+
+
+/*
+===============================================================================
+8. VERIFY TABLES
+===============================================================================
+*/
+
+SELECT 
+    TABLE_SCHEMA,
+    TABLE_NAME
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_SCHEMA = 'bronze'
+ORDER BY TABLE_NAME;
 GO
